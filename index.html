@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Robot Control Panel</title>
+  <title>Panel de control 1.5</title>
   <script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
   <style>
     body {
@@ -29,74 +29,87 @@
   </style>
 </head>
 <body>
-<h2>Robot Control (Arrow Keys)</h2>
+<h2>Panel de control universal (1.5)</h2>
 <h3>ROS Connection</h3>
-<label>ROS2 PC IP:</label>
+<label>ROS2 IP:</label>
 <input type="text" id="ros_ip" value="192.168.1.100">
-<label>Port:</label>
+<label>Puerto:</label>
 <input type="number" id="ros_port" value="9090">
-<button onclick="connectROS()">Connect</button>
-<p>Status: <span id="status">Disconnected</span></p>
+<button onclick="connectROS()">Conectar</button>
+<p>Estado: <span id="status">Sin conexion</span></p>
 <hr>
-<h3>Speed Settings</h3>
+<h3>Velocidad</h3>
 <label>Linear:</label>
 <input type="number" id="linear" value="0.3" step="0.1">
 <br><br>
 <label>Angular:</label>
 <input type="number" id="angular" value="1.0" step="0.1">
 <hr>
-<h3>Odometry</h3>
+<h3>Odometria</h3>
 <p>X: <span id="pos_x">0</span></p>
 <p>Y: <span id="pos_y">0</span></p>
-<p>Theta (deg): <span id="theta">0</span></p>
+<p>Teta (deg): <span id="theta">0</span></p>
 <p>Linear Vel: <span id="lin_vel">0</span></p>
 <p>Angular Vel: <span id="ang_vel">0</span></p>
 <hr>
-<h3>Buttons (optional)</h3>
-<button onclick="sendCmd(getLinear(), 0)">Forward</button>
-<button onclick="sendCmd(-getLinear(), 0)">Backward</button>
-<button onclick="sendCmd(0, getAngular())">Left</button>
-<button onclick="sendCmd(0, -getAngular())">Right</button>
-<button onclick="sendCmd(0, 0)">Stop</button>
+<h3>Boton</h3>
+<button onclick="sendCmd(getLinear(), 0)">Adelante</button>
+<button onclick="sendCmd(-getLinear(), 0)">Atras</button>
+<button onclick="sendCmd(0, getAngular())">Izquierda</button>
+<button onclick="sendCmd(0, -getAngular())">Derecha</button>
+<button onclick="sendCmd(0, 0)">parar</button>
 <script>
 var ros = null;
 var cmdVel = null;
 var odomListener = null;
 let keys = {};
 function connectROS() {
+
   const ip = document.getElementById("ros_ip").value;
   const port = document.getElementById("ros_port").value;
+
   const ws_url = `ws://${ip}:${port}`;
+
   document.getElementById("status").innerText =
-    "Connecting...";
+    "Conectando con websocket...";
+
   ros = new ROSLIB.Ros({
     url: ws_url
   });
   ros.on('connection', () => {
-    console.log("Connected to ROS");
+
+    console.log("Conectado");
+
     document.getElementById("status").innerText =
-      "Connected";
+      "Conectado";
 
     setupTopics();
   });
 
   ros.on('error', (error) => {
+
     console.error("ROS Error:", error);
+
     document.getElementById("status").innerText =
       "Error";
   });
+
   ros.on('close', () => {
+
     console.log("ROS connection closed");
+
     document.getElementById("status").innerText =
-      "Closed";
+      "Cerrado";
   });
 }
+
 function setupTopics() {
   cmdVel = new ROSLIB.Topic({
     ros: ros,
     name: '/cmd_vel',
     messageType: 'geometry_msgs/msg/Twist'
   });
+
   odomListener = new ROSLIB.Topic({
     ros: ros,
     name: '/odom',
